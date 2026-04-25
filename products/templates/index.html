@@ -1,19 +1,189 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block nav_home %}active{% endblock %}
 
 {% block content %}
-<h1>Products</h1>
-<div class="row">
-    {% for product in products %}
-        <div class="col">
-            <div class="card" style="width: 18rem;">
-                <img src="{{ product.image_url }}" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text">${{ product.price }}</p>
-                    <a href="#" class="btn btn-primary">Add To Cart</a>
-                </div>
+
+<!-- Categories Section -->
+<h2 class="section-title">Grocery &amp; Kitchen</h2>
+<div class="category-grid">
+    <a href="{% url 'search' %}?category=vegetables-fruits" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/3194/3194591.png" alt="Vegetables">
         </div>
-    </div>
+        <span class="category-name">Vegetables &amp; Fruits</span>
+    </a>
+    <a href="{% url 'search' %}?category=dairy-bread" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/2403/2403306.png" alt="Dairy">
+        </div>
+        <span class="category-name">Dairy &amp; Bread</span>
+    </a>
+    <a href="{% url 'search' %}?category=snacks-drinks" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/2738/2738730.png" alt="Snacks">
+        </div>
+        <span class="category-name">Snacks &amp; Drinks</span>
+    </a>
+    <a href="{% url 'search' %}?category=meat-fish" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/1046/1046771.png" alt="Meat">
+        </div>
+        <span class="category-name">Meat &amp; Fish</span>
+    </a>
+</div>
+
+<!-- Bestsellers Section with scroll indicator -->
+<div class="section-header-row">
+    <h2 class="section-title no-margin">Bestsellers</h2>
+    <span class="scroll-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        scroll
+    </span>
+</div>
+
+<div class="product-scroll-row" id="bestsellers-row">
+    {% for product in products %}
+    <a href="{% url 'product_detail' product.id %}" class="product-card-link">
+        <div class="product-card">
+            <div class="delivery-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                16 MINS
+            </div>
+            
+            <div class="product-image-wrapper">
+                <img src="{{ product.image_url }}" class="product-image" alt="{{ product.name }}">
+            </div>
+            
+            <h3 class="product-title">{{ product.name }}</h3>
+            <div class="product-weight">1 unit</div>
+            
+            <div class="product-price-row">
+                <div class="product-price">${{ product.price }}</div>
+                <form action="{% url 'cart:cart_add' product.id %}" method="post" onclick="event.stopPropagation()">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="add-btn">ADD</button>
+                </form>
+            </div>
+        </div>
+    </a>
     {% endfor %}
 </div>
+
+<!-- Scroll track indicator -->
+<div class="scroll-track-container">
+    <div class="scroll-track">
+        <div class="scroll-thumb" id="scroll-thumb"></div>
+    </div>
+</div>
+
+<!-- Household Essentials Section -->
+<h2 class="section-title" style="margin-top: 2rem;">Household Essentials</h2>
+<div class="category-grid">
+    <a href="{% url 'search' %}?category=cleaning" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/2928/2928036.png" alt="Cleaning">
+        </div>
+        <span class="category-name">Cleaning</span>
+    </a>
+    <a href="{% url 'search' %}?category=bath-body" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/2553/2553645.png" alt="Bath">
+        </div>
+        <span class="category-name">Bath &amp; Body</span>
+    </a>
+    <a href="{% url 'search' %}?category=paper-goods" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/2722/2722097.png" alt="Paper">
+        </div>
+        <span class="category-name">Paper Goods</span>
+    </a>
+    <a href="{% url 'search' %}?category=pet-care" class="category-item">
+        <div class="category-image-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/2138/2138241.png" alt="Pet">
+        </div>
+        <span class="category-name">Pet Care</span>
+    </a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const row   = document.getElementById('bestsellers-row');
+    const thumb = document.getElementById('scroll-thumb');
+    const track = thumb ? thumb.parentElement : null;
+
+    if (!row || !thumb || !track) return;
+
+    /* ── Update thumb position & width ── */
+    function updateThumb() {
+        const scrollable = row.scrollWidth - row.clientWidth;
+        if (scrollable <= 0) { thumb.style.width = '100%'; thumb.style.left = '0'; return; }
+        const ratio      = row.scrollLeft / scrollable;
+        const trackW     = track.clientWidth;
+        const thumbW     = Math.max(40, (row.clientWidth / row.scrollWidth) * trackW);
+        thumb.style.width = thumbW + 'px';
+        thumb.style.left  = (ratio * (trackW - thumbW)) + 'px';
+    }
+
+    row.addEventListener('scroll', updateThumb);
+    window.addEventListener('resize', updateThumb);
+    updateThumb();
+
+    /* ── Click on track scrolls row ── */
+    track.addEventListener('click', function (e) {
+        if (e.target === thumb) return;
+        const rect    = track.getBoundingClientRect();
+        const clickX  = e.clientX - rect.left;
+        const ratio   = clickX / track.clientWidth;
+        row.scrollLeft = ratio * (row.scrollWidth - row.clientWidth);
+    });
+
+    /* ── Drag thumb ── */
+    let dragging = false, dragStartX = 0, dragStartScroll = 0;
+
+    thumb.addEventListener('mousedown', function (e) {
+        dragging = true;
+        dragStartX      = e.clientX;
+        dragStartScroll = row.scrollLeft;
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        const dx        = e.clientX - dragStartX;
+        const trackW    = track.clientWidth;
+        const thumbW    = parseFloat(thumb.style.width) || 40;
+        const scrollMax = row.scrollWidth - row.clientWidth;
+        const scrollDx  = (dx / (trackW - thumbW)) * scrollMax;
+        row.scrollLeft  = dragStartScroll + scrollDx;
+    });
+
+    document.addEventListener('mouseup', function () {
+        if (dragging) { dragging = false; document.body.style.userSelect = ''; }
+    });
+
+    /* ── Touch drag ── */
+    thumb.addEventListener('touchstart', function (e) {
+        dragging = true;
+        dragStartX      = e.touches[0].clientX;
+        dragStartScroll = row.scrollLeft;
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function (e) {
+        if (!dragging) return;
+        const dx        = e.touches[0].clientX - dragStartX;
+        const trackW    = track.clientWidth;
+        const thumbW    = parseFloat(thumb.style.width) || 40;
+        const scrollMax = row.scrollWidth - row.clientWidth;
+        row.scrollLeft  = dragStartScroll + (dx / (trackW - thumbW)) * scrollMax;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function () { dragging = false; });
+});
+</script>
+
 {% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Cart - QuikKart{% endblock %}
+{% block nav_cart %}active{% endblock %}
+
+{% block content %}
+
+{% if cart %}
+
+<!-- Cart Items -->
+<div class="cart-page">
+  <div class="cart-header-row">
+    <h1 class="cart-title">Your Cart</h1>
+    <span class="cart-count">{{ cart|length }} item{{ cart|length|pluralize }}</span>
+  </div>
+
+  <div class="cart-items-list">
+    {% for item in cart %}
+    {% if item.product %}
+    <div class="cart-item-card">
+      <div class="cart-item-img-wrap">
+        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-img">
+      </div>
+      <div class="cart-item-details">
+        <div class="cart-item-name">{{ item.product.name }}</div>
+        <div class="cart-item-meta">
+          <span class="cart-item-qty">Qty: {{ item.quantity }}</span>
+          <span class="cart-item-unit-price">${{ item.price }} each</span>
+        </div>
+        <div class="cart-item-total">${{ item.total_price }}</div>
+      </div>
+      <form action="{% url 'cart:cart_remove' item.product.id %}" method="post" class="cart-remove-form">
+        {% csrf_token %}
+        <button type="submit" class="cart-remove-btn" aria-label="Remove item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Order Total -->
+  <div class="cart-total-card">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Subtotal</span>
+      <span class="cart-total-value">${{ cart.get_total_price }}</span>
+    </div>
+    <div class="cart-total-row">
+      <span class="cart-total-label">Delivery</span>
+      <span class="cart-delivery-free">FREE</span>
+    </div>
+    <div class="cart-total-row cart-total-final">
+      <span>Total</span>
+      <span>${{ cart.get_total_price }}</span>
+    </div>
+
+    <div class="cart-delivery-info">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      Estimated delivery in <strong>16 minutes</strong>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <a href="{% url 'orders:order_create' %}" class="checkout-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+    Proceed to Checkout
+  </a>
+  <a href="{% url 'index' %}" class="continue-shopping-link">← Continue Shopping</a>
+
+</div>
+
+{% else %}
+
+<!-- Empty Cart -->
+<div class="empty-cart">
+  <div class="empty-cart-icon">🛒</div>
+  <h2 class="empty-cart-title">Your cart is empty</h2>
+  <p class="empty-cart-sub">Add some items to get started!</p>
+  <a href="{% url 'index' %}" class="checkout-btn" style="display:inline-flex; width:auto; padding: 0.85rem 2rem;">
+    Start Shopping
+  </a>
+</div>
+
+{% endif %}
+
+{% endblock %}

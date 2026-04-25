@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - QuikKart{% endblock %}
+{% block nav_search %}active{% endblock %}
+
+{% block content %}
+
+<div class="search-page-header">
+    <a href="{% url 'index' %}" class="back-btn" aria-label="Go back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+    </a>
+    <h1 class="search-page-title">{{ page_title }}</h1>
+</div>
+
+{% if not category %}
+<!-- Category chips for quick filtering -->
+<div class="category-chips-row">
+    <a href="{% url 'search' %}" class="chip {% if not category and not query %}chip-active{% endif %}">All</a>
+    <a href="{% url 'search' %}?category=vegetables-fruits" class="chip {% if category == 'vegetables-fruits' %}chip-active{% endif %}">🥦 Veggies &amp; Fruits</a>
+    <a href="{% url 'search' %}?category=dairy-bread" class="chip {% if category == 'dairy-bread' %}chip-active{% endif %}">🥛 Dairy &amp; Bread</a>
+    <a href="{% url 'search' %}?category=snacks-drinks" class="chip {% if category == 'snacks-drinks' %}chip-active{% endif %}">🍿 Snacks</a>
+    <a href="{% url 'search' %}?category=meat-fish" class="chip {% if category == 'meat-fish' %}chip-active{% endif %}">🥩 Meat &amp; Fish</a>
+    <a href="{% url 'search' %}?category=cleaning" class="chip {% if category == 'cleaning' %}chip-active{% endif %}">🧹 Cleaning</a>
+    <a href="{% url 'search' %}?category=bath-body" class="chip {% if category == 'bath-body' %}chip-active{% endif %}">🛁 Bath &amp; Body</a>
+    <a href="{% url 'search' %}?category=paper-goods" class="chip {% if category == 'paper-goods' %}chip-active{% endif %}">🧻 Paper Goods</a>
+    <a href="{% url 'search' %}?category=pet-care" class="chip {% if category == 'pet-care' %}chip-active{% endif %}">🐾 Pet Care</a>
+</div>
+{% else %}
+<!-- Category chips for quick filtering (with active) -->
+<div class="category-chips-row">
+    <a href="{% url 'search' %}" class="chip">All</a>
+    <a href="{% url 'search' %}?category=vegetables-fruits" class="chip {% if category == 'vegetables-fruits' %}chip-active{% endif %}">🥦 Veggies &amp; Fruits</a>
+    <a href="{% url 'search' %}?category=dairy-bread" class="chip {% if category == 'dairy-bread' %}chip-active{% endif %}">🥛 Dairy &amp; Bread</a>
+    <a href="{% url 'search' %}?category=snacks-drinks" class="chip {% if category == 'snacks-drinks' %}chip-active{% endif %}">🍿 Snacks</a>
+    <a href="{% url 'search' %}?category=meat-fish" class="chip {% if category == 'meat-fish' %}chip-active{% endif %}">🥩 Meat &amp; Fish</a>
+    <a href="{% url 'search' %}?category=cleaning" class="chip {% if category == 'cleaning' %}chip-active{% endif %}">🧹 Cleaning</a>
+    <a href="{% url 'search' %}?category=bath-body" class="chip {% if category == 'bath-body' %}chip-active{% endif %}">🛁 Bath &amp; Body</a>
+    <a href="{% url 'search' %}?category=paper-goods" class="chip {% if category == 'paper-goods' %}chip-active{% endif %}">🧻 Paper Goods</a>
+    <a href="{% url 'search' %}?category=pet-care" class="chip {% if category == 'pet-care' %}chip-active{% endif %}">🐾 Pet Care</a>
+</div>
+{% endif %}
+
+{% if products %}
+    <p class="result-count">{{ products|length }} item{{ products|length|pluralize }} found</p>
+    <div class="search-results-grid">
+        {% for product in products %}
+        <a href="{% url 'product_detail' product.id %}" class="product-card-link">
+            <div class="product-card">
+                <div class="delivery-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    16 MINS
+                </div>
+                <div class="product-image-wrapper">
+                    <img src="{{ product.image_url }}" class="product-image" alt="{{ product.name }}">
+                </div>
+                <h3 class="product-title">{{ product.name }}</h3>
+                <div class="product-weight">1 unit</div>
+                <div class="product-price-row">
+                    <div class="product-price">${{ product.price }}</div>
+                    <form action="{% url 'cart:cart_add' product.id %}" method="post" onclick="event.stopPropagation()">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="add-btn">ADD</button>
+                    </form>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-search">
+        <div class="empty-search-icon">🔍</div>
+        <h3>No products found</h3>
+        {% if query %}
+            <p>We couldn't find anything for "<strong>{{ query }}</strong>".</p>
+            <p>Try a different keyword or browse categories above.</p>
+        {% elif category %}
+            <p>No products in this category yet. Check back soon!</p>
+        {% else %}
+            <p>Browse our categories above to find what you need.</p>
+        {% endif %}
+        <a href="{% url 'index' %}" class="btn-primary" style="display:inline-block; margin-top: 1.5rem; width: auto; padding: 0.75rem 2rem; border-radius: 8px; text-decoration: none;">Go Home</a>
+    </div>
+{% endif %}
+
+{% endblock %}

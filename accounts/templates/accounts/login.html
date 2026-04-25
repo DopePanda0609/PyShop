@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In - QuikKart{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 1rem; padding-bottom: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh;">
+    <div style="background: white; padding: 2.5rem 1.5rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); width: 100%; max-width: 400px;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="background: var(--primary-light); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--primary);">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </div>
+            <h1 style="margin: 0 0 0.5rem; font-size: 1.5rem; color: #111827;">Welcome Back</h1>
+            <p style="margin: 0; color: #6b7280; font-size: 0.95rem;">Log in to your account to continue</p>
+        </div>
+
+        <form method="post" action="{% url 'accounts:login' %}">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div style="background: #fee2e2; color: #b91c1c; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; border: 1px solid #fca5a5;">
+                    Your username and password didn't match. Please try again.
+                </div>
+            {% endif %}
+            
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">Username</label>
+                <input type="text" name="username" required autofocus style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#d1d5db'">
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">Password</label>
+                <input type="password" name="password" required style="width: 100%; padding: 0.8rem 1rem; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#d1d5db'">
+            </div>
+            
+            <input type="hidden" name="next" value="{{ next }}">
+            
+            <button type="submit" class="checkout-btn" style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: 8px;">Log In</button>
+        </form>
+        
+        <div style="margin-top: 1.5rem; text-align: center; color: #6b7280; font-size: 0.95rem;">
+            Don't have an account? <a href="{% url 'accounts:register' %}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Sign up</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -18,5 +18,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('products/', include('products.urls'))
+    path('cart/', include('cart.urls', namespace='cart')),
+    path('accounts/', include('accounts.urls')),
+    path('orders/', include('orders.urls', namespace='orders')),
+    path('products/', include('products.urls')),
+    path('', include('products.urls')), # Set root to products
 ]
