@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delivery Address - QuikKart{% endblock %}
+
+{% block content %}
+
+<div class="address-page">
+    <div class="address-page-header">
+        <a href="{% url 'index' %}" class="back-btn" aria-label="Back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+        </a>
+        <h1 class="address-page-title">Delivery Address</h1>
+    </div>
+
+    {% if success %}
+    <div class="address-success-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Address saved successfully!
+    </div>
+    {% endif %}
+
+    <!-- Detect Location Card -->
+    <div class="address-card" id="detect-card">
+        <div class="address-card-icon detect-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+        </div>
+        <div class="address-card-body">
+            <div class="address-card-title">Use My Location</div>
+            <div class="address-card-sub" id="detect-status">Tap to detect your current location</div>
+        </div>
+        <button class="detect-btn" id="detect-btn" onclick="detectLocation()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            Detect
+        </button>
+    </div>
+
+    <div class="address-divider">
+        <span>or enter manually</span>
+    </div>
+
+    <!-- Manual Address Form -->
+    <form method="post" action="{% url 'address' %}" class="address-form">
+        {% csrf_token %}
+        <div class="form-group-label">
+            <label for="address-input">Delivery Address</label>
+        </div>
+        <textarea
+            id="address-input"
+            name="address"
+            class="address-textarea"
+            placeholder="e.g. 123 Main Street, New York, NY 10001"
+            rows="3"
+        >{% if saved_address %}{{ saved_address }}{% endif %}</textarea>
+
+        <div class="address-hints">
+            <button type="button" class="hint-chip" onclick="fillExample('123 Main St, New York, NY 10001')">📍 New York</button>
+            <button type="button" class="hint-chip" onclick="fillExample('456 Sunset Blvd, Los Angeles, CA 90028')">📍 Los Angeles</button>
+            <button type="button" class="hint-chip" onclick="fillExample('789 Michigan Ave, Chicago, IL 60611')">📍 Chicago</button>
+        </div>
+
+        <button type="submit" class="btn-primary address-save-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Save Address
+        </button>
+    </form>
+
+    {% if saved_address %}
+    <div class="current-address-card">
+        <div class="current-address-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            Current Address
+        </div>
+        <div class="current-address-text">{{ saved_address }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function fillExample(addr) {
+    document.getElementById('address-input').value = addr;
+}
+
+function detectLocation() {
+    const btn = document.getElementById('detect-btn');
+    const status = document.getElementById('detect-status');
+
+    if (!navigator.geolocation) {
+        status.textContent = '⚠️ Location is not supported by your browser.';
+        status.style.color = '#ef4444';
+        return;
+    }
+
+    btn.textContent = 'Detecting...';
+    btn.disabled = true;
+    status.textContent = '📡 Requesting your location...';
+    status.style.color = '#6b7280';
+
+    navigator.geolocation.getCurrentPosition(
+        async function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            status.textContent = `📍 Got coordinates (${lat.toFixed(4)}, ${lon.toFixed(4)}). Resolving address...`;
+
+            try {
+                // Use OpenStreetMap Nominatim reverse geocoding (free, no key)
+                const resp = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+                    { headers: { 'Accept-Language': 'en' } }
+                );
+                const data = await resp.json();
+                const address = data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+                document.getElementById('address-input').value = address;
+                status.textContent = '✅ Location detected!';
+                status.style.color = '#16a34a';
+                btn.textContent = 'Detected ✓';
+                btn.style.background = '#16a34a';
+                btn.style.color = 'white';
+            } catch (e) {
+                const fallback = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                document.getElementById('address-input').value = fallback;
+                status.textContent = '✅ Coordinates detected (reverse geocoding failed).';
+                status.style.color = '#f59e0b';
+                btn.textContent = 'Done';
+                btn.disabled = false;
+            }
+        },
+        function(error) {
+            btn.textContent = 'Detect';
+            btn.disabled = false;
+            if (error.code === error.PERMISSION_DENIED) {
+                status.textContent = '❌ Location access denied. Please allow location in browser settings and try again.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                status.textContent = '❌ Location unavailable. Check your GPS or network.';
+            } else {
+                status.textContent = '❌ Location request timed out. Please try again.';
+            }
+            status.style.color = '#ef4444';
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+}
+</script>
+
+{% endblock %}

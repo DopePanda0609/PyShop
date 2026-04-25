@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - PyShop{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Checkout</h1>
+</div>
+
+<div class="product-detail-container" style="gap: 2rem;">
+    <div style="background-color: var(--bg); padding: 2rem; border-radius: 12px; border: 1px solid var(--border);">
+        <h3 style="margin-bottom: 1.5rem;">Your Order Summary</h3>
+        <ul style="list-style: none; margin-bottom: 2rem;">
+            {% for item in cart %}
+                <li style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                    <span>{{ item.quantity }}x {{ item.product.name }}</span>
+                    <span>${{ item.total_price }}</span>
+                </li>
+            {% endfor %}
+            <li style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.25rem;">
+                <span>Total:</span>
+                <span>${{ cart.get_total_price }}</span>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="form-container" style="margin: 0; max-width: 100%;">
+        <h3 style="margin-bottom: 1.5rem;">Shipping Details</h3>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: 2rem;">Place Order</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
